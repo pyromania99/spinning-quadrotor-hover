@@ -1,0 +1,170 @@
+<mujoco model="spinning_drone">
+  <compiler angle="degree"/>
+  <option timestep="0.001" gravity="0 0 -9.81" integrator="RK4"/>
+
+  <visual>
+    <headlight ambient="0.5 0.5 0.5"/>
+  </visual>
+
+  <asset>
+    <texture name="grid" type="2d" builtin="checker" width="512" height="512" rgb1="0.2 0.2 0.2" rgb2="0.3 0.3 0.3"/>
+    <material name="grid" texture="grid" texrepeat="1 1" texuniform="true" reflectance="0.2"/>
+    <material name="wing_mat" rgba="0.8 0.3 0.1 0.8"/>
+    <material name="motor_mat" rgba="0.3 0.3 0.3 1"/>
+    <material name="prop_mat" rgba="0.1 0.1 0.1 0.7"/>
+    
+    <!-- Wing blade mesh -->
+    <mesh name="wing_blade" file="feb_wing.stl" scale="0.001 0.001 0.001"/>
+  </asset>
+
+  <worldbody>
+    <light pos="0 0 5" dir="0 0 -1" diffuse="0.8 0.8 0.8"/>
+    <geom name="floor" type="plane" size="10 10 0.1" material="grid"/>
+
+    <!-- Main drone body - 800g total mass (quad body + 4 motors) -->
+    <!-- Motor bodies add ~293g from geometry, so quad body = 507g -->
+    <body name="quad" pos="0 0 0.1" quat="1 0 0 0">
+      <joint name="root" type="free"/>
+      <!-- Inertia for spinning drone: Izz > Ixx = Iyy for yaw stability -->
+      <inertial pos="0 0 0" mass="0.507" diaginertia="0.008 0.008 0.012"/>
+
+      <!-- Central hub -->
+      <geom type="cylinder" size="0.05 0.02" pos="0 0 0" rgba="0.2 0.2 0.2 1"/>
+      
+      <!-- Motor arms (X-configuration) - extend to r=0.4m -->
+      <!-- Arm 1: +X+Y direction (45°) -->
+      <geom type="box" size="0.20 0.015 0.008" pos="0.14 0.14 0" euler="0 0 45" rgba="0.3 0.3 0.3 1"/>
+      <!-- Arm 2: -X+Y direction (135°) -->
+      <geom type="box" size="0.20 0.015 0.008" pos="-0.14 0.14 0" euler="0 0 -45" rgba="0.3 0.3 0.3 1"/>
+      <!-- Arm 3: -X-Y direction (225°) -->
+      <geom type="box" size="0.20 0.015 0.008" pos="-0.14 -0.14 0" euler="0 0 45" rgba="0.3 0.3 0.3 1"/>
+      <!-- Arm 4: +X-Y direction (315°) -->
+      <geom type="box" size="0.20 0.015 0.008" pos="0.14 -0.14 0" euler="0 0 -45" rgba="0.3 0.3 0.3 1"/>
+
+      <!-- ================================================================ -->
+      <!-- MOTOR 1: Position at r=0.4m, angle=45° (+X+Y) -->
+      <!-- Position: (0.4*cos(45°), 0.4*sin(45°), 0) = (0.283, 0.283, 0) -->
+      <!-- Tilt axis: tangent to circle = (-sin(45°), cos(45°), 0) = (-0.707, 0.707, 0) -->
+      <!-- ================================================================ -->
+      <body name="motor1" pos="0.283 0.283 0">
+        <!-- Tilt joint: rotates thrust vector tangentially (in direction of spin) -->
+        <joint name="motor1_tilt" type="hinge" axis="-0.707 0.707 0" range="-60 60" damping="0.1"/>
+        <geom type="cylinder" size="0.025 0.015" pos="0 0 0.015" material="motor_mat"/>
+        <geom type="box" size="0.06 0.01 0.003" pos="0 0 0.032" material="prop_mat"/>
+        <site name="thrust1" pos="0 0 0" size="0.01"/>
+      </body>
+
+      <!-- ================================================================ -->
+      <!-- MOTOR 2: Position at r=0.4m, angle=135° (-X+Y) -->
+      <!-- Position: (0.4*cos(135°), 0.4*sin(135°), 0) = (-0.283, 0.283, 0) -->
+      <!-- Tilt axis: tangent = (-sin(135°), cos(135°), 0) = (-0.707, -0.707, 0) -->
+      <!-- ================================================================ -->
+      <body name="motor2" pos="-0.283 0.283 0">
+        <joint name="motor2_tilt" type="hinge" axis="-0.707 -0.707 0" range="-60 60" damping="0.1"/>
+        <geom type="cylinder" size="0.025 0.015" pos="0 0 0.015" material="motor_mat"/>
+        <geom type="box" size="0.06 0.01 0.003" pos="0 0 0.032" material="prop_mat"/>
+        <site name="thrust2" pos="0 0 0" size="0.01"/>
+      </body>
+
+      <!-- ================================================================ -->
+      <!-- MOTOR 3: Position at r=0.4m, angle=225° (-X-Y) -->
+      <!-- Position: (-0.283, -0.283, 0) -->
+      <!-- Tilt axis: tangent = (-sin(225°), cos(225°), 0) = (0.707, -0.707, 0) -->
+      <!-- ================================================================ -->
+      <body name="motor3" pos="-0.283 -0.283 0">
+        <joint name="motor3_tilt" type="hinge" axis="0.707 -0.707 0" range="-60 60" damping="0.1"/>
+        <geom type="cylinder" size="0.025 0.015" pos="0 0 0.015" material="motor_mat"/>
+        <geom type="box" size="0.06 0.01 0.003" pos="0 0 0.032" material="prop_mat"/>
+        <site name="thrust3" pos="0 0 0" size="0.01"/>
+      </body>
+
+      <!-- ================================================================ -->
+      <!-- MOTOR 4: Position at r=0.4m, angle=315° (+X-Y) -->
+      <!-- Position: (0.283, -0.283, 0) -->
+      <!-- Tilt axis: tangent = (-sin(315°), cos(315°), 0) = (0.707, 0.707, 0) -->
+      <!-- ================================================================ -->
+      <body name="motor4" pos="0.283 -0.283 0">
+        <joint name="motor4_tilt" type="hinge" axis="0.707 0.707 0" range="-60 60" damping="0.1"/>
+        <geom type="cylinder" size="0.025 0.015" pos="0 0 0.015" material="motor_mat"/>
+        <geom type="box" size="0.06 0.01 0.003" pos="0 0 0.032" material="prop_mat"/>
+        <site name="thrust4" pos="0 0 0" size="0.01"/>
+      </body>
+
+      <!-- ================================================================ -->
+      <!-- WING 1: Blade from r=0.4m to r=0.65m along +X+Y direction (45°) -->
+      <!-- Wing sections for force application -->
+      <!-- ================================================================ -->
+      <!-- Wing body at root position (r=0.4m) for controlled rotation -->
+      <body name="wing1_root" pos="0.283 0.283 0.01" euler="0 0 45">
+        <!-- Massless wing - visual only -->
+        <inertial pos="0 0 0" mass="0.001" diaginertia="0.000001 0.000001 0.000001"/>
+        <!-- Wing visual geometry - positioned relative to wing root -->
+        <!-- Adjust the pos offset here if your STL origin isn't at root -->
+        <geom name="wing1_vis" type="mesh" mesh="wing_blade" pos="-0.12 0.25 0" euler="0 90 180" material="wing_mat" contype="0" conaffinity="0"/>
+        
+        <!-- Wing section sites in LOCAL coordinates (along +X from root) -->
+        <site name="wing1_s1" pos="0.042 0 0" size="0.008"/>  <!-- r=0.42, 0.042m from root -->
+        <site name="wing1_s2" pos="0.092 0 0" size="0.008"/>  <!-- r=0.46, 0.092m from root -->
+        <site name="wing1_s3" pos="0.142 0 0" size="0.008"/>  <!-- r=0.50 -->
+        <site name="wing1_s4" pos="0.192 0 0" size="0.008"/>  <!-- r=0.54 -->
+        <site name="wing1_s5" pos="0.242 0 0" size="0.008"/>  <!-- r=0.58 -->
+        <site name="wing1_s6" pos="0.292 0 0" size="0.008"/>  <!-- r=0.63 -->
+      </body>
+
+      <!-- ================================================================ -->
+      <!-- WING 2: Blade from r=0.4m to r=0.65m along -X+Y direction (135°) -->
+      <!-- ================================================================ -->
+      <body name="wing2_root" pos="-0.283 0.283 0.01" euler="0 0 135">
+        <inertial pos="0 0 0" mass="0.001" diaginertia="0.000001 0.000001 0.000001"/>
+        <geom name="wing2_vis" type="mesh" mesh="wing_blade" pos="-0.12 0.25 0" euler="0 90 180" material="wing_mat" contype="0" conaffinity="0"/>
+        <site name="wing2_s1" pos="0.042 0 0" size="0.008"/>
+        <site name="wing2_s2" pos="0.092 0 0" size="0.008"/>
+        <site name="wing2_s3" pos="0.142 0 0" size="0.008"/>
+        <site name="wing2_s4" pos="0.192 0 0" size="0.008"/>
+        <site name="wing2_s5" pos="0.242 0 0" size="0.008"/>
+        <site name="wing2_s6" pos="0.292 0 0" size="0.008"/>
+      </body>
+
+      <!-- ================================================================ -->
+      <!-- WING 3: Blade from r=0.4m to r=0.65m along -X-Y direction (225°) -->
+      <!-- ================================================================ -->
+      <body name="wing3_root" pos="-0.283 -0.283 0.01" euler="0 0 225">
+        <inertial pos="0 0 0" mass="0.001" diaginertia="0.000001 0.000001 0.000001"/>
+        <geom name="wing3_vis" type="mesh" mesh="wing_blade" pos="-0.12 0.25 0" euler="0 90 180" material="wing_mat" contype="0" conaffinity="0"/>
+        <site name="wing3_s1" pos="0.042 0 0" size="0.008"/>
+        <site name="wing3_s2" pos="0.092 0 0" size="0.008"/>
+        <site name="wing3_s3" pos="0.142 0 0" size="0.008"/>
+        <site name="wing3_s4" pos="0.192 0 0" size="0.008"/>
+        <site name="wing3_s5" pos="0.242 0 0" size="0.008"/>
+        <site name="wing3_s6" pos="0.292 0 0" size="0.008"/>
+      </body>
+
+      <!-- ================================================================ -->
+      <!-- WING 4: Blade from r=0.4m to r=0.65m along +X-Y direction (315°) -->
+      <!-- ================================================================ -->
+      <body name="wing4_root" pos="0.283 -0.283 0.01" euler="0 0 315">
+        <inertial pos="0 0 0" mass="0.001" diaginertia="0.000001 0.000001 0.000001"/>
+        <geom name="wing4_vis" type="mesh" mesh="wing_blade" pos="-0.12 0.25 0" euler="0 90 180" material="wing_mat" contype="0" conaffinity="0"/>
+        <site name="wing4_s1" pos="0.042 0 0" size="0.008"/>
+        <site name="wing4_s2" pos="0.092 0 0" size="0.008"/>
+        <site name="wing4_s3" pos="0.142 0 0" size="0.008"/>
+        <site name="wing4_s4" pos="0.192 0 0" size="0.008"/>
+        <site name="wing4_s5" pos="0.242 0 0" size="0.008"/>
+        <site name="wing4_s6" pos="0.292 0 0" size="0.008"/>
+      </body>
+
+      <!-- Camera for visualization -->
+      <camera name="track" mode="trackcom" pos="0 -2 1.5" xyaxes="1 0 0 0 0.5 1"/>
+      <camera name="top" mode="trackcom" pos="0 0 3" xyaxes="1 0 0 0 1 0"/>
+    </body>
+  </worldbody>
+
+  <!-- Actuators for motor tilt control (visual only - flight forces applied via mj_applyFT) -->
+  <!-- Low kp to avoid reaction torques launching the drone -->
+  <actuator>
+    <position name="tilt1" joint="motor1_tilt" kp="2" ctrlrange="-60 60"/>
+    <position name="tilt2" joint="motor2_tilt" kp="2" ctrlrange="-60 60"/>
+    <position name="tilt3" joint="motor3_tilt" kp="2" ctrlrange="-60 60"/>
+    <position name="tilt4" joint="motor4_tilt" kp="2" ctrlrange="-60 60"/>
+  </actuator>
+</mujoco>

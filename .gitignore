@@ -1,0 +1,45 @@
+# ── MATLAB binaries ──────────────────────────────────────────────────────────
+*.fig
+*.mat
+*.asv
+*.mlapp
+*.mex*
+
+# ── MuJoCo / Python ──────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+mujoco_env/
+*.egg-info/
+
+# ── Large simulation outputs ──────────────────────────────────────────────────
+# sim_log.json files are 100-150 MB — too large for GitHub
+sim_log*.json
+
+# ── Raw flight logs (large binary) ───────────────────────────────────────────
+*.ulg
+*.bag
+*.mcap
+
+# ── Fusion 360 / CAD lock files ──────────────────────────────────────────────
+~$*.xlsx
+~$*.docx
+*.lck
+
+# ── OS junk ──────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── VS Code ──────────────────────────────────────────────────────────────────
+.vscode/
+
+# ── Ansys project files (large) ──────────────────────────────────────────────
+*.wbpj
+*_files/
+
+# ── Archive / temp ───────────────────────────────────────────────────────────
+_archive/
+*.tmp
+*.bak
