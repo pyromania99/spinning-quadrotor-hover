@@ -27,12 +27,6 @@ The drone achieves yaw control and attitude stabilization through spinning wing 
 
 ---
 
-## ⚠️ Path Note
-
-This repository is an archival export. Scripts use **Windows-style relative paths** (e.g., `mujoco\\quad.xml`) that will need updating to run in a new environment. See each subdirectory's README for the expected directory layout.
-
----
-
 ## Dependencies
 
 | Component | Requirements |

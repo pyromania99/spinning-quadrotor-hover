@@ -1,8 +1,10 @@
 import mujoco
 import mujoco.viewer
 import numpy as np
+import os
 
-model = mujoco.MjModel.from_xml_path("mujoco\\quad.xml")
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+model = mujoco.MjModel.from_xml_path(os.path.join(_SCRIPT_DIR, '..', 'models', 'quad.xml'))
 data = mujoco.MjData(model)
 
 # Get quad body ID
@@ -368,9 +370,11 @@ def main():
     
     # Save logged data
     import json
-    with open('mujoco/sim_log.json', 'w') as f:
+    _results_dir = os.path.join(_SCRIPT_DIR, '..', 'results')
+    os.makedirs(_results_dir, exist_ok=True)
+    with open(os.path.join(_results_dir, 'sim_log.json'), 'w') as f:
         json.dump(log_data, f)
-    print("\n\nSimulation data saved to mujoco/sim_log.json")
+    print("\n\nSimulation data saved to simulation/mujoco/results/sim_log.json")
 
 
 if __name__ == "__main__":

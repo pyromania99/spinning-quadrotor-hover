@@ -32,6 +32,10 @@ import pandas as pd
 import re
 from collections import defaultdict
 
+_SCRIPT_DIR = Path(__file__).parent
+_RESULTS_DIR = _SCRIPT_DIR / '..' / 'results'
+_POLARS_DIR = _SCRIPT_DIR / '..' / '..' / '..' / 'aerodynamics' / 'airfoil_polars'
+
 # ============================================================================
 # SYSTEM CONSTANTS
 # ============================================================================
@@ -62,8 +66,10 @@ BLADE_SECTIONS = None  # Will load from file
 # ============================================================================
 # LOAD BLADE DATA
 # ============================================================================
-def load_blade_data(filepath='optimized_design.txt'):
+def load_blade_data(filepath=None):
     """Load blade sections from optimized_design.txt"""
+    if filepath is None:
+        filepath = _RESULTS_DIR / 'optimized_design.txt'
     data_rows = []
     with open(filepath, 'r', encoding='utf-8') as f:
         lines = f.readlines()
@@ -98,8 +104,10 @@ def load_blade_data(filepath='optimized_design.txt'):
     return pd.DataFrame(data_rows)
 
 
-def load_xflr_polars(polar_dir='xflr_polars'):
+def load_xflr_polars(polar_dir=None):
     """Load all XFLR5 polar files for dynamic Re-based lookup."""
+    if polar_dir is None:
+        polar_dir = _POLARS_DIR
     polar_path = Path(polar_dir)
     
     # Dictionary: airfoil_name -> {Re: {alpha: (Cl, Cd)}}
@@ -1278,8 +1286,10 @@ def plot_results(sweep_df, n_blades):
     
     plt.suptitle('Spinning Drone Motor Optimization (BEMT)', fontsize=15, fontweight='bold')
     plt.tight_layout()
-    plt.savefig('results/spinning_drone_bemt_analysis.png', dpi=200, bbox_inches='tight')
-    print("\n✓ Saved: results/spinning_drone_bemt_analysis.png")
+    _out = _RESULTS_DIR / 'spinning_drone_bemt_analysis.png'
+    _RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    plt.savefig(_out, dpi=200, bbox_inches='tight')
+    print(f"\n✓ Saved: {_out}")
     
     return fig
 

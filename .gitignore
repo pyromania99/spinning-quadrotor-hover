@@ -43,3 +43,12 @@ desktop.ini
 _archive/
 *.tmp
 *.bak
+
+experiments/
+
+# ── Controller / novel method code (not published) ───────────────────────────
+simulation/mujoco/scripts/LQR.py
+simulation/mujoco/scripts/backstepping_controller.py
+simulation/mujoco/scripts/eigen_so3.py
+simulation/mujoco/scripts/eigen_Sim.py
+simulation/mujoco/scripts/tilt_sim.py
