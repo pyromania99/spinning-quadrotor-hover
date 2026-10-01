@@ -2,6 +2,8 @@
 
 A novel UAV design that uses **rotating wings for attitude control and aerodynamic lift augmentation**. This repository contains the simulation models, aerodynamic analysis, hardware designs, and experimental data accompanying the research paper.
 
+https://pyromania99.github.io/Spinning-drone-Lift-augumentation/ the accompanying page for this project.
+
 ---
 
 ## Repository Structure
